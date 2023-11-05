@@ -3,6 +3,9 @@ name = "keyweave"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+azure_identity = "0.17.0"
+azure_security_keyvault = "0.17.0"
+clap = { version = "4.4.7", features = ["derive"] }
+futures = "0.3.29"
+tokio = {version = "1.33.0", features = ["full"]}

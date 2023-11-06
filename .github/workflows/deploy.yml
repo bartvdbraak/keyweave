@@ -36,6 +36,13 @@ jobs:
       shell: bash
       run: echo "VERSION=${GITHUB_REF#refs/tags/}}" >> $GITHUB_ENV
 
+    - name: Install development packages of OpenSSL
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          sudo apt install libssl-dev -y
+        else
+
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:

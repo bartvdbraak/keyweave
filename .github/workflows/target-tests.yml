@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "feat/additional-build-targets"
+  pull_request:
+    branches:
+      - "main" 
+    paths:
+      - ".github/workflows/target-tests.yml"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        name:
+          - linux-x86-64-gnu
+          # - linux-x86-64-musl
+          # - linux-armhf-gnu
+          # - linux-arm64-gnu
+          # - mac-x86-64
+          # - mac-arm64
+        include:
+          - name: linux-x86-64-gnu
+            os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            cross: false
+            experimental: false
+
+          # - name: linux-x86-64-musl
+          #   os: ubuntu-latest
+          #   target: x86_64-unknown-linux-musl
+          #   cross: true
+          #   experimental: false
+
+          # - name: linux-armhf-gnu
+          #   os: ubuntu-20.04
+          #   target: armv7-unknown-linux-gnueabihf
+          #   cross: true
+          #   experimental: false
+
+          # - name: linux-arm64-gnu
+          #   os: ubuntu-20.04
+          #   target: aarch64-unknown-linux-gnu
+          #   cross: true
+          #   experimental: false
+
+          # - name: mac-x86-64
+          #   os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   cross: false
+          #   experimental: false
+
+          # - name: mac-arm64
+          #   os: macos-11.0
+          #   target: aarch64-apple-darwin
+          #   cross: true
+          #   experimental: true
+
+    name: Binaries for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('Cargo.lock') }}
+
+      - uses: actions/cache@v3
+        if: startsWith(matrix.name, 'linux-')
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-${{ hashFiles('.github/workflows/release.yml') }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: taiki-e/setup-cross-toolchain-action@v1
+        with:
+          # NB: sets CARGO_BUILD_TARGET evar - do not need --target flag in build
+          target: ${{ matrix.target }}
+
+      - uses: taiki-e/install-action@cross
+        if: ${{ matrix.cross }}
+
+      - run: cargo build --release --locked

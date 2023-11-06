@@ -11,18 +11,18 @@ jobs:
     strategy:
       matrix:
         name:
-          # - linux-x86-64-gnu
+          - linux-x86-64-gnu
           # - linux-x86-64-musl
           # - linux-armhf-gnu
           # - linux-arm64-gnu
-          - mac-x86-64
-          - mac-arm64
+          # - mac-x86-64
+          # - mac-arm64
         include:
-          # - name: linux-x86-64-gnu
-          #   os: ubuntu-20.04
-          #   target: x86_64-unknown-linux-gnu
-          #   cross: false
-          #   experimental: false
+          - name: linux-x86-64-gnu
+            os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            cross: false
+            experimental: false
 
           # - name: linux-x86-64-musl
           #   os: ubuntu-latest
@@ -42,17 +42,17 @@ jobs:
           #   cross: true
           #   experimental: false
 
-          - name: mac-x86-64
-            os: macos-latest
-            target: x86_64-apple-darwin
-            cross: false
-            experimental: false
+          # - name: mac-x86-64
+          #   os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   cross: false
+          #   experimental: false
 
-          - name: mac-arm64
-            os: macos-11.0
-            target: aarch64-apple-darwin
-            cross: true
-            experimental: true
+          # - name: mac-arm64
+          #   os: macos-11.0
+          #   target: aarch64-apple-darwin
+          #   cross: true
+          #   experimental: true
 
     name: Binaries for ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -85,76 +85,76 @@ jobs:
 
       - run: cargo build --release --locked
 
-      - name: Extract version
-        shell: bash
-        run: |
-          set -euxo pipefail
+  #     - name: Extract version
+  #       shell: bash
+  #       run: |
+  #         set -euxo pipefail
 
-          version=$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)
+  #         version=$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)
 
-          if [[ -z "$version" ]]; then
-            echo "Error: no version :("
-            exit 1
-          fi
+  #         if [[ -z "$version" ]]; then
+  #           echo "Error: no version :("
+  #           exit 1
+  #         fi
 
-          echo "$version" > VERSION
+  #         echo "$version" > VERSION
 
-      - name: Package
-        shell: bash
-        run: |
-          set -euxo pipefail
-          ext=""
-          [[ "${{ matrix.name }}" == windows-* ]] && ext=".exe"
-          bin="target/${{ matrix.target }}/release/keyweave${ext}"
-          strip "$bin" || true
-          dst="keyweave-${{ matrix.target }}"
-          mkdir "$dst"
-          cp "$bin" "$dst/"
+  #     - name: Package
+  #       shell: bash
+  #       run: |
+  #         set -euxo pipefail
+  #         ext=""
+  #         [[ "${{ matrix.name }}" == windows-* ]] && ext=".exe"
+  #         bin="target/${{ matrix.target }}/release/keyweave${ext}"
+  #         strip "$bin" || true
+  #         dst="keyweave-${{ matrix.target }}"
+  #         mkdir "$dst"
+  #         cp "$bin" "$dst/"
 
-      - name: Archive (tar)
-        if: '! startsWith(matrix.name, ''windows-'')'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          dst="keyweave-${{ matrix.target }}"
-          tar cavf "$dst.tar.xz" "$dst"
+  #     - name: Archive (tar)
+  #       if: '! startsWith(matrix.name, ''windows-'')'
+  #       shell: bash
+  #       run: |
+  #         set -euxo pipefail
+  #         dst="keyweave-${{ matrix.target }}"
+  #         tar cavf "$dst.tar.xz" "$dst"
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: builds
-          retention-days: 1
-          path: |
-            keyweave-*.tar.xz
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: builds
+  #         retention-days: 1
+  #         path: |
+  #           keyweave-*.tar.xz
 
-  sign:
-    needs: build
+  # sign:
+  #   needs: build
 
-    name: Checksum and sign
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write
+  #   name: Checksum and sign
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write
+  #     contents: write
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin
-          key: sign-tools-${{ hashFiles('.github/workflows/release.yml') }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/cache@v3
+  #       with:
+  #         path: ~/.cargo/bin
+  #         key: sign-tools-${{ hashFiles('.github/workflows/release.yml') }}
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: builds
+  #     - uses: actions/download-artifact@v3
+  #       with:
+  #         name: builds
 
-      - name: Checksums with SHA512
-        run: sha512sum keyweave-* | tee SHA512SUMS
+  #     - name: Checksums with SHA512
+  #       run: sha512sum keyweave-* | tee SHA512SUMS
 
-      - uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          files: |
-            keyweave-*.tar.xz
-            *SUMS*
+  #     - uses: softprops/action-gh-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         generate_release_notes: true
+  #         fail_on_unmatched_files: true
+  #         files: |
+  #           keyweave-*.tar.xz
+  #           *SUMS*

@@ -40,8 +40,8 @@ jobs:
       shell: bash
       run: |
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          sudo apt install libssl-dev -y
-        else
+          sudo apt install -y libssl-dev
+        fi
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable

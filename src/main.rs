@@ -39,41 +39,38 @@ async fn fetch_secrets_from_key_vault(
     filter: Option<&str>,
 ) -> Result<Vec<(String, String)>, Box<dyn std::error::Error>> {
     let credential = DefaultAzureCredential::default();
-    let mut client = KeyvaultClient::new(
+    let client = KeyvaultClient::new(
         &vault_url,
         std::sync::Arc::new(credential),
-        ).unwrap().secret_client();
-
-    let secrets = client.list_secrets().into_stream().next().await;
-    dbg!(&secrets);
+    )?.secret_client();
 
     let mut secret_values = Vec::new();
+    let mut secret_pages = client.list_secrets().into_stream();
+
+    while let Some(page) = secret_pages.next().await {
+        let page = page?;
+        for secret in &page.value {
+            if let Some(filter) = filter {
+                if !secret.id.contains(filter) {
+                    continue;
+                }
+            }
+            let secret_name = secret.id.split('/').last().unwrap_or_default();
+            let secret_bundle = client.get(secret_name).await?;
+            secret_values.push((secret.id.clone(), secret_bundle.value));
+        }
+    }
 
     Ok(secret_values)
-
-    // let mut secret_values = Vec::new();
-    // let mut secret_pages = client.secret_client().list_secrets().into_stream();
-
-    // while let Some(page) = secret_pages.next().await {
-    //     let page = page?;
-    //     for secret in &page.value {
-    //         if let Some(filter) = filter {
-    //             if !secret.id.contains(filter) {
-    //                 continue;
-    //             }
-    //         }
-    //         let secret_bundle = client.secret_client().get(&secret.id).await?;
-    //         secret_values.push((secret.id.clone(), secret_bundle.value.clone()));
-    //     }
-    // }
-
-    // Ok(secret_values)
 }
 
 fn create_env_file(secrets: Vec<(String, String)>, output_file: &str) -> std::io::Result<()> {
     let mut file = File::create(output_file)?;
     for (key, value) in secrets {
-        writeln!(file, "{}={}", key, value)?;
+        // Extract the secret name from the URL
+        if let Some(secret_name) = key.split('/').last() {
+            writeln!(file, "{}={}", secret_name, value)?;
+        }
     }
     Ok(())
 }

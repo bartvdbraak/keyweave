@@ -41,6 +41,11 @@ jobs:
       with:
         targets: ${{ matrix.target }}
 
+    - name: List toolchain installed components
+      shell: bash
+      run: |
+        rustup component list
+        
     - name: Build
       uses: actions-rs/cargo@v1
       with:

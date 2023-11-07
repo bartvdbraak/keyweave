@@ -39,7 +39,7 @@ async fn fetch_secrets_from_key_vault(
     filter: Option<&str>,
 ) -> Result<Vec<(String, String)>, Box<dyn std::error::Error>> {
     let credential = DefaultAzureCredential::default();
-    let client = KeyvaultClient::new(&vault_url, std::sync::Arc::new(credential))?.secret_client();
+    let client = KeyvaultClient::new(vault_url, std::sync::Arc::new(credential))?.secret_client();
 
     let mut secret_values = Vec::new();
     let mut secret_pages = client.list_secrets().into_stream();

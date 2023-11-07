@@ -111,6 +111,7 @@ jobs:
           retention-days: 1
           path: |
             keyweave-*.tar.xz
+            keyweave.exe
 
   sign:
     needs: build
@@ -143,4 +144,5 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             keyweave-*.tar.xz
+            keyweave.exe
             *SUMS*

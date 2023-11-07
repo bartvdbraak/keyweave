@@ -5,9 +5,22 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-
+      
 jobs:
+  pre-check:
+    name: Pre-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          if [[ "$(git describe --tags --abbrev=0)" != "v$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)" ]]; then
+            echo "Error: The git tag does not match the Cargo.toml version."
+            exit 1
+          fi
+          echo "Success: The git tag matches the Cargo.toml version."
+
   build:
+    needs: pre-check
     strategy:
       matrix:
         name:

@@ -94,4 +94,7 @@ jobs:
       - uses: taiki-e/install-action@cross
         if: ${{ matrix.cross }}
 
+      - run: sudo apt-get install pkg-config libssl-dev
+        if: startsWith(matrix.name, 'linux-')
+
       - run: cargo build --release --locked

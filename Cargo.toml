@@ -2,6 +2,7 @@
 name = "keyweave"
 version = "0.1.0"
 edition = "2021"
+authors = ["Bart van der Braak <bart@vanderbraak.nl>"]
 
 [dependencies]
 azure_identity = "0.17.0"

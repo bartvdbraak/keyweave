@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - "feat/additional-build-targets"
   pull_request:
     branches:
       - "main" 

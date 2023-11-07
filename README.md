@@ -23,7 +23,7 @@ Keyweave is an open-source tool designed to seamlessly fetch secrets from Azure 
 Clone the repository to your local machine:
 
 ```sh
-git clone https://github.com/your-username/keyweave.git
+git clone https://github.com/bartvdbraak/keyweave.git
 cd keyweave
 ```
 

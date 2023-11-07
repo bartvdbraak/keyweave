@@ -144,5 +144,5 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             keyweave-*.tar.xz
-            keyweave.exe
+            keyweave-*/keyweave.exe
             *SUMS*

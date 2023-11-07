@@ -1,14 +1,10 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - "feat/additional-build-targets"
-  pull_request:
-    branches:
-      - "main" 
-    paths:
-      - ".github/workflows/target-tests.yml"
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
@@ -94,7 +90,80 @@ jobs:
       - uses: taiki-e/install-action@cross
         if: ${{ matrix.cross }}
 
-      - run: sudo apt-get install pkg-config libssl-dev
-        if: startsWith(matrix.name, 'linux-')
-
       - run: cargo build --release --locked
+
+      - name: Extract version
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          version=$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)
+
+          if [[ -z "$version" ]]; then
+            echo "Error: no version :("
+            exit 1
+          fi
+
+          echo "$version" > VERSION
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ext=""
+          [[ "${{ matrix.name }}" == windows-* ]] && ext=".exe"
+          bin="target/${{ matrix.target }}/release/keyweave${ext}"
+          strip "$bin" || true
+          dst="keyweave-${{ matrix.target }}"
+          mkdir "$dst"
+          cp "$bin" "$dst/"
+
+      - name: Archive (tar)
+        if: '! startsWith(matrix.name, ''windows-'')'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          dst="keyweave-${{ matrix.target }}"
+          tar cavf "$dst.tar.xz" "$dst"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: builds
+          retention-days: 1
+          path: |
+            keyweave-*.tar.xz
+            keyweave-x86_64-pc-windows-gnu/keyweave.exe
+
+  sign:
+    needs: build
+
+    name: Checksum and sign
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin
+          key: sign-tools-${{ hashFiles('.github/workflows/release.yml') }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: builds
+
+      - name: Checksums with SHA512
+        run: sha512sum keyweave-* | tee SHA512SUMS
+
+      - uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            keyweave-*.tar.xz
+            keyweave-*/keyweave.exe
+            *SUMS*

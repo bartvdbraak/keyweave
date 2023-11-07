@@ -53,7 +53,7 @@ cargo run -- --vault_name my-key-vault --output my-env-file.env --filter my-secr
 
 ## License
 
-Keyweave is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
+Keyweave is licensed under the GLPv3 License. See [LICENSE](LICENSE) for more details.
 
 ## Contributing
 

@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Write;
 
 #[derive(Parser)]
-#[clap(version = "0.1.0", author = "Bart van der Braak <bart@vanderbraak.nl>")]
+#[clap(author, version, about, long_about = None)]
 struct Opts {
     #[clap(
         short,

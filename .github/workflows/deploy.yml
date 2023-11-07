@@ -111,7 +111,7 @@ jobs:
           retention-days: 1
           path: |
             keyweave-*.tar.xz
-            keyweave.exe
+            keyweave-x86_64-pc-windows-gnu/keyweave.exe
 
   sign:
     needs: build

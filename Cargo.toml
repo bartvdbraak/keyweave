@@ -10,5 +10,5 @@ clap = { version = "4.4.7", features = ["derive"] }
 futures = "0.3.29"
 tokio = {version = "1.33.0", features = ["full"]}
 
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(all(target_os = "linux", any(target_env = "musl", target_arch = "arm", target_arch = "aarch64")))'.dependencies]
 openssl = { version = "0.10", features = ["vendored"] }

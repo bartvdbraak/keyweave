@@ -6,26 +6,42 @@ on:
       - main
 
 jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - id: fmt
+      name: Format code with rustfmt
+      run: |
+        cargo fmt --all -- --check
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Lint code with clippy
+      run: cargo clippy --all -- --deny warnings
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Install cargo-audit
+      run: cargo install cargo-audit
+    - name: Check for known vulnerabilities with cargo-audit
+      run: cargo audit
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Run tests
+      run: cargo test --all
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
-
-    - name: Install cargo-audit
-      run: cargo install cargo-audit
-
-    - name: Format code with rustfmt
-      run: cargo fmt --all -- --check
-
-    - name: Lint code with clippy
-      run: cargo clippy --all -- --deny warnings
-
-    - name: Check for known vulnerabilities with cargo-audit
-      run: cargo audit
-
     - name: Build project
       run: cargo build --all --release
-
-    - name: Run tests
-      run: cargo test --all

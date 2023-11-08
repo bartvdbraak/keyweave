@@ -1,8 +1,6 @@
-<h1 align="center">
-    <img src="https://github.com/bartvdbraak/keyweave/assets/3996360/bed7f004-e897-46e5-98a4-c654251c0e17" alt="Cluster" width="336">
-</h1>
-
 # Keyweave
+
+<img align="right" src="https://github.com/bartvdbraak/keyweave/assets/3996360/bed7f004-e897-46e5-98a4-c654251c0e17" alt="Cluster" height="256">
 
 Keyweave is an open-source tool designed to seamlessly fetch secrets from Azure Key Vault and weave them into a convenient `.env` file. Developed in Rust, Keyweave is efficient and easy to use, making it an ideal choice for managing your application's secrets.
 

@@ -2,7 +2,7 @@
 
 <img align="right" src="https://github.com/bartvdbraak/keyweave/assets/3996360/bed7f004-e897-46e5-98a4-c654251c0e17" alt="Cluster" height="256">
 
-Keyweave is an open-source tool designed to seamlessly fetch secrets from Azure Key Vault and weave them into a convenient `.env` file. Developed in Rust, Keyweave is efficient and easy to use, making it an ideal choice for managing your application's secrets.
+Keyweave is an open-source tool crafted to seamlessly fetch secrets from Azure Key Vault and weave them into a convenient `.env` file. Developed in Rust, Keyweave stands out for its efficiency and user-friendly design, making it an ideal choice for managing your application's secrets.
 
 ## Features
 
@@ -13,30 +13,52 @@ Keyweave is an open-source tool designed to seamlessly fetch secrets from Azure 
 
 ## Prerequisites
 
-- **Rust**: Ensure you have Rust installed on your system. If not, you can install it using [rustup](https://rustup.rs/).
-- **Azure Account**: Log into your Azure tenant and set up the right subscription.
+Before diving into Keyweave, ensure you have the following prerequisites:
 
-## Installation
+- **Azure Account**: Log into your Azure tenant and set up the right subscription, along with any Access Policies required for you to read and list secrets from your Key Vault.
 
-Clone the repository to your local machine:
+```sh
+az login --tenant "your-tenant-guid"
+az account set --subscription "your-subscription-guid"
+```
+
+## Installation (MacOS, Linux)
+
+For MacOS and Linux systems, installation is a breeze with [Homebrew](https://brew.sh/). Simply run:
+
+```bash
+brew tap bartvdbraak/keyweave
+brew install keyweave
+```
+
+## Manual Download 
+
+If you prefer manual installation or need binaries for different platforms (including an executable for Windows), visit the [Releases](/releases) page of this GitHub repository.
+
+## Building from Source
+
+Keyweave is built with [Cargo](https://doc.rust-lang.org/cargo/), the Rust package manager.
+
+To build Keyweave from source, follow these steps:
 
 ```sh
 git clone https://github.com/bartvdbraak/keyweave.git
 cd keyweave
+cargo build --release
 ```
 
-Build the project:
+Once built, run Keyweave using Cargo:
 
 ```sh
-cargo build --release
+cargo run -- --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 ```
 
 ## Usage
 
-After building the project, you can run Keyweave using the following command:
+With the binary on your `PATH`, run Keyweave as follows:
 
 ```sh
-cargo run -- --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
+keyweave --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 ```
 
 - `--vault_name <VAULT_NAME>`: Sets the name of the Azure Key Vault.
@@ -46,13 +68,13 @@ cargo run -- --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 ## Example
 
 ```sh
-cargo run -- --vault_name my-key-vault --output my-env-file.env --filter my-secret
+keyweave --vault_name my-key-vault --output my-env-file.env --filter my-secret
 ```
 
 ## License
 
-Keyweave is licensed under the GLPv3 License. See [LICENSE](LICENSE) for more details.
+Keyweave is licensed under the GPLv3 License. See [LICENSE](LICENSE) for more details.
 
 ## Contributing
 
-We welcome contributions! Please feel free to submit pull requests, report issues, or suggest new features.
+We welcome contributions! Feel free to submit pull requests, report issues, or suggest new features. Your input helps make Keyweave even better.

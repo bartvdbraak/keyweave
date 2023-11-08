@@ -68,7 +68,9 @@ async fn fetch_secrets_from_key_vault(
                 // Handle the result and send it through the channel
                 match secret_bundle {
                     Ok(bundle) => {
-                        tx.send((secret_id, bundle.value)).await.expect("Send error");
+                        tx.send((secret_id, bundle.value))
+                            .await
+                            .expect("Send error");
                     }
                     Err(err) => {
                         eprintln!("Error fetching secret: {}", err);

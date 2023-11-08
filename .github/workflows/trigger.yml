@@ -14,6 +14,8 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     steps:
+      - id: setversion
+        run: echo "version=$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)" >> $GITHUB_OUTPUT
       - uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.PAT_TOKEN }}
@@ -22,5 +24,14 @@ jobs:
               owner: 'bartvdbraak',
               repo: 'homebrew-keyweave',
               workflow_id: 'release.yml',
-              ref: 'main'
+              ref: 'main',
+              inputs: {
+                version: '${{ steps.setversion.outputs.version }}',
+                sha256sums: '5d486e110fed077ff9309814cc4bb205b50fa4263bad3d204e4d9f230002dd3c  keyweave-aarch64-apple-darwin.tar.xz
+                da415340276b6bc8f700e54cafdef23445973dba0d126065cf73135dff2c922d  keyweave-aarch64-unsknown-linux-gnu.tar.xz
+                45863c6d3f34bb7727cd112a0adfc20b840f4f5c92def99b9e15bde20e2a32f8  keyweave-armv7-unknown-linux-gnueabihf.tar.xz
+                d88f646619d69f088fb2a1c223c7b1cf6199659fd593abc475851ddee866d4e9  keyweave-x86_64-apple-darwin.tar.xz
+                79317c194bd41a2d9ec55e80353e3eb510a11e3c57708e65cc0a34966a86ae14  keyweave-x86_64-unknown-linux-gnu.tar.xz
+                6f6ad0810a4bf75d914dd09c4c55efadc8b038d10811c4223b787ac5d1cf4186  keyweave-x86_64-unknown-linux-musl.tar.xz'
+              }
             })

@@ -1,0 +1,26 @@
+name: test trigger
+
+on:
+  push:
+    branches:
+      - "feat/homebrew-releases"
+  pull_request:
+    branches:
+      - "main" 
+    paths:
+      - ".github/workflows/trigger.yml"
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'bartvdbraak',
+              repo: 'homebrew-keyweave',
+              workflow_id: 'release.yml',
+              ref: 'main'
+            })

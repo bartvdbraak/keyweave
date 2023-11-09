@@ -852,7 +852,7 @@ dependencies = [
 
 [[package]]
 name = "keyweave"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "azure_identity",
  "azure_security_keyvault",

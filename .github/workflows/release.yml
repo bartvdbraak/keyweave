@@ -195,7 +195,7 @@ jobs:
         with:
           github-token: ${{ secrets.PAT_TOKEN }}
           script: |
-            const sha256sums = JSON.parse('${{ steps.homebrew-inputs.outputs.sha256sums }}');
+            const sha256sums = ${{ steps.homebrew-inputs.outputs.sha256sums }}
       
             await github.rest.actions.createWorkflowDispatch({
               owner: 'bartvdbraak',

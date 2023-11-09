@@ -10,14 +10,21 @@ jobs:
   pre-check:
     name: Pre-check
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version-check.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          if [[ "$(git describe --tags --abbrev=0)" != "v$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)" ]]; then
+      - id: version-check
+        run: |
+          version_tag="$(git describe --tags --abbrev=0 | sed 's/^v//')"
+          version_toml="$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)"
+
+          if [[ "$version_tag" != "$version_toml" ]]; then
             echo "Error: The git tag does not match the Cargo.toml version."
             exit 1
           fi
           echo "Success: The git tag matches the Cargo.toml version."
+          echo "version=$version_toml" >> $GITHUB_OUTPUT
 
   build:
     needs: pre-check
@@ -108,16 +115,7 @@ jobs:
       - name: Extract version
         shell: bash
         run: |
-          set -euxo pipefail
-
-          version=$(grep -m1 -F 'version =' Cargo.toml | cut -d\" -f2)
-
-          if [[ -z "$version" ]]; then
-            echo "Error: no version :("
-            exit 1
-          fi
-
-          echo "$version" > VERSION
+          echo "${{ needs.pre-check.outputs.version }}" > VERSION
 
       - name: Package
         shell: bash
@@ -148,7 +146,9 @@ jobs:
             keyweave-x86_64-pc-windows-gnu/keyweave.exe
 
   sign:
-    needs: build
+    needs: 
+      - pre-check
+      - build
 
     name: Checksum and sign
     runs-on: ubuntu-latest
@@ -183,12 +183,11 @@ jobs:
             keyweave-*/keyweave.exe
             *SUMS*
 
-      - name: Create Homebrew inputs
+      - name: Generate SHA256SUM input for Homebrew
         id: homebrew-inputs
         run: |
           sha256sums="{$(awk '{printf "%s '\''%s'\'': '\''%s'\''", (NR>1 ? "," : ""), $2, $1} END {print ""}' SHA256SUMS)}"
           echo "sha256sums=$sha256sums" >> $GITHUB_OUTPUT
-          echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
 
       - uses: actions/github-script@v6
         name: Dispatch Homebrew release
@@ -203,7 +202,7 @@ jobs:
               workflow_id: 'release.yml',
               ref: 'main',
               inputs: {
-                version: '${{ steps.homebrew-inputs.outputs.version }}',
+                version: '${{ needs.pre-check.outputs.version }}',
                 sha256sums: JSON.stringify(sha256sums)
               }
             })

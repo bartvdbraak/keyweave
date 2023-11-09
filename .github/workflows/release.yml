@@ -145,12 +145,12 @@ jobs:
             keyweave-*.tar.xz
             keyweave-x86_64-pc-windows-gnu/keyweave.exe
 
-  sign:
+  release:
     needs: 
       - pre-check
       - build
 
-    name: Checksum and sign
+    name: Sign and Release
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -195,7 +195,6 @@ jobs:
           github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const sha256sums = ${{ steps.homebrew-inputs.outputs.sha256sums }}
-      
             await github.rest.actions.createWorkflowDispatch({
               owner: 'bartvdbraak',
               repo: 'homebrew-keyweave',
@@ -206,3 +205,19 @@ jobs:
                 sha256sums: JSON.stringify(sha256sums)
               }
             })
+
+  publish:
+    needs: release
+    name: Publish crate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - run: cargo publish --token ${CARGO_REGISTRY_TOKEN}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

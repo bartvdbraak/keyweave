@@ -1,8 +1,13 @@
 [package]
 name = "keyweave"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Bart van der Braak <bart@vanderbraak.nl>"]
+keywords = ["azure", "keyvault", "env"]
+description = "Fetches secrets from Azure Key Vault and weaves them into a convenient .env file"
+license = "GPL-3.0"
+documentation = "https://docs.rs/keyweave"
+repository = "https://github.com/bartvdbraak/keyweave/"
 
 [dependencies]
 azure_identity = "0.17.0"

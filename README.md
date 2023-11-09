@@ -1,6 +1,6 @@
 # Keyweave
 
-<img align="right" src="https://github.com/bartvdbraak/keyweave/assets/3996360/bed7f004-e897-46e5-98a4-c654251c0e17" alt="Cluster" height="256">
+<img align="right" src="https://github.com/bartvdbraak/keyweave/assets/3996360/bed7f004-e897-46e5-98a4-c654251c0e17" alt="Cluster" width="40%">
 
 Keyweave is an open-source tool crafted to seamlessly fetch secrets from Azure Key Vault and weave them into a convenient `.env` file. Developed in Rust, Keyweave stands out for its efficiency and user-friendly design, making it an ideal choice for managing your application's secrets.
 
@@ -15,14 +15,25 @@ Keyweave is an open-source tool crafted to seamlessly fetch secrets from Azure K
 
 Before diving into Keyweave, ensure you have the following prerequisites:
 
-- **Azure Account**: Log into your Azure tenant and set up the right subscription, along with any Access Policies required for you to read and list secrets from your Key Vault.
+- Logged into the right Azure tenant:
 
-```sh
-az login --tenant "your-tenant-guid"
-az account set --subscription "your-subscription-guid"
+  ```bash
+  az login --tenant "your-tenant-guid"
+  ```
+
+- Identity has `Get` and `List` Secret Permissions in the Access Policies of the Key Vault.
+
+## Installation 
+
+### Cargo
+
+Keyweave is built with [Cargo](https://doc.rust-lang.org/cargo/), the Rust package manager. It can also be used to install from [crates.io](https://crates.io/crates/keyweave):
+
+```bash
+cargo install keyweave
 ```
 
-## Installation (MacOS, Linux)
+### Homebrew (MacOS, Linux)
 
 For MacOS and Linux systems, installation is a breeze with [Homebrew](https://brew.sh/). Simply run:
 
@@ -31,13 +42,15 @@ brew tap bartvdbraak/keyweave
 brew install keyweave
 ```
 
-## Manual Download 
+### Manual Download
 
 If you prefer manual installation or need binaries for different platforms (including an executable for Windows), visit the [Releases](/releases) page of this GitHub repository.
 
-## Building from Source
+```powershell
+Invoke-WebRequest -Uri 'https://github.com/bartvdbraak/keyweave/releases/latest/download/keyweave.exe' -OutFile 'keyweave.exe'
+```
 
-Keyweave is built with [Cargo](https://doc.rust-lang.org/cargo/), the Rust package manager.
+## Building from Source
 
 To build Keyweave from source, follow these steps:
 
@@ -70,6 +83,10 @@ keyweave --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 ```sh
 keyweave --vault_name my-key-vault --output my-env-file.env --filter my-secret
 ```
+
+## Documentation
+
+Additional documentation for this package can be found on [docs.rs](https://docs.rs/keyweave).
 
 ## License
 

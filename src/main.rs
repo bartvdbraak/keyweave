@@ -114,6 +114,36 @@ fn create_env_file(secrets: Vec<(String, String)>, output_file: &str) -> Result<
     Ok(())
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::io::{self, BufRead};
+
+    #[tokio::test]
+    async fn test_create_env_file() -> Result<()> {
+        let test_secrets = vec![
+            ("SECRET_KEY".to_string(), "secret_value1".to_string()),
+            ("API_KEY".to_string(), "secret_value2".to_string()),
+        ];
+
+        let test_file = "test_output.env";
+        create_env_file(test_secrets, test_file)?;
+
+        let file = fs::File::open(test_file)?;
+        let reader = io::BufReader::new(file);
+        let lines: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
+
+        assert_eq!(
+            lines,
+            vec!["SECRET_KEY=secret_value1", "API_KEY=secret_value2",]
+        );
+
+        fs::remove_file(test_file)?; // Clean up the test file
+        Ok(())
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let opts: Opts = Opts::parse();

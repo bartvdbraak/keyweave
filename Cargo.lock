@@ -854,6 +854,7 @@ dependencies = [
 name = "keyweave"
 version = "0.2.2"
 dependencies = [
+ "anyhow",
  "azure_identity",
  "azure_security_keyvault",
  "clap",

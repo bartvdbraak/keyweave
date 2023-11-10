@@ -10,6 +10,7 @@ documentation = "https://docs.rs/keyweave"
 repository = "https://github.com/bartvdbraak/keyweave/"
 
 [dependencies]
+anyhow = "1.0.75"
 azure_identity = "0.17.0"
 azure_security_keyvault = "0.17.0"
 clap = { version = "4.4.7", features = ["derive"] }

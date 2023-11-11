@@ -1,9 +1,12 @@
 name: Checks
 
 on:
+  push:
+    branches: [ main ]
+    paths: [ 'src/**', 'Cargo.toml', 'Cargo.lock' ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+    paths: [ 'src/**', 'Cargo.toml', 'Cargo.lock' ]
 
 jobs:
   fmt:

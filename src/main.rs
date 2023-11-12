@@ -9,6 +9,8 @@ use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::Semaphore;
+use paris::Logger;
+// use paris::error;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -147,18 +149,24 @@ mod tests {
 #[tokio::main]
 async fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
+    let mut log = Logger::new();
 
     let vault_url = format!("https://{}.vault.azure.net", opts.vault_name);
-    println!("Fetching secrets from Key Vault: {}", opts.vault_name);
 
+    log.loading("Detecting credentials.");
     let credential = DefaultAzureCredential::default();
     let client = KeyvaultClient::new(&vault_url, std::sync::Arc::new(credential))
         .context("Failed to create KeyvaultClient")?;
+    log.success("Detected credentials.");
 
+    log.loading(format!("Fetching secrets from Key Vault: <blue>{}</>", opts.vault_name));
     let secrets = fetch_secrets_from_key_vault(&client, opts.filter.as_deref()).await?;
-    println!("Creating output file: {}", opts.output);
+    log.success(format!("Fetched secrets from Key Vault: <blue>{}</>", opts.vault_name));
+    
+    log.loading(format!("Creating output file: <blue>{}</>", opts.output));
     create_env_file(secrets, &opts.output)?;
+    log.success(format!("Created output file: <blue>{}</>", opts.output));
 
-    println!("Process completed successfully!");
+    log.success("Done.");
     Ok(())
 }

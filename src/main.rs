@@ -4,12 +4,12 @@ use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
 use clap::Parser;
 use futures::stream::StreamExt;
+use paris::Logger;
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::Semaphore;
-use paris::Logger;
 // use paris::error;
 
 #[derive(Parser, Debug)]
@@ -159,10 +159,16 @@ async fn main() -> Result<()> {
         .context("Failed to create KeyvaultClient")?;
     log.success("Detected credentials.");
 
-    log.loading(format!("Fetching secrets from Key Vault: <blue>{}</>", opts.vault_name));
+    log.loading(format!(
+        "Fetching secrets from Key Vault: <blue>{}</>",
+        opts.vault_name
+    ));
     let secrets = fetch_secrets_from_key_vault(&client, opts.filter.as_deref()).await?;
-    log.success(format!("Fetched secrets from Key Vault: <blue>{}</>", opts.vault_name));
-    
+    log.success(format!(
+        "Fetched secrets from Key Vault: <blue>{}</>",
+        opts.vault_name
+    ));
+
     log.loading(format!("Creating output file: <blue>{}</>", opts.output));
     create_env_file(secrets, &opts.output)?;
     log.success(format!("Created output file: <blue>{}</>", opts.output));

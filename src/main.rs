@@ -1,16 +1,15 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use azure_identity::DefaultAzureCredential;
 use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
 use clap::Parser;
 use futures::stream::StreamExt;
-use paris::Logger;
+use paris::{error, Logger};
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::Semaphore;
-// use paris::error;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -36,7 +35,13 @@ async fn fetch_secrets_from_key_vault(
     let mut secret_pages = client.secret_client().list_secrets().into_stream();
 
     while let Some(page) = secret_pages.next().await {
-        let page = page.context("Failed to fetch secrets page")?;
+        let page = match page {
+            Ok(p) => p,
+            Err(err) => {
+                error!("Failed to fetch secrets page: {}", err);
+                return Err(err.into()); // Convert the error into anyhow::Error
+            }
+        };
         secret_values
             .extend(fetch_secrets_from_page(&client.secret_client(), &page, filter).await?);
     }
@@ -77,6 +82,8 @@ async fn fetch_secrets_from_page(
     for handle in handles {
         if let Ok(result) = handle.await {
             secrets.push(result);
+        } else {
+            error!("Error occurred while fetching a secret.");
         }
     }
 
@@ -99,20 +106,30 @@ async fn fetch_and_send_secret(
             (secret_id, bundle.value)
         }
         Err(err) => {
-            eprintln!("Error fetching secret: {}", err);
+            error!("Error fetching secret: {}", err);
             (secret_id, String::new())
         }
     }
 }
 
 fn create_env_file(secrets: Vec<(String, String)>, output_file: &str) -> Result<()> {
-    let mut file = File::create(output_file).context("Failed to create output file")?;
+    let mut file = match File::create(output_file) {
+        Ok(f) => f,
+        Err(err) => {
+            error!("Failed to create output file: {}", err);
+            return Err(err.into());
+        }
+    };
+
     for (key, value) in secrets {
         if let Some(secret_name) = key.split('/').last() {
-            writeln!(file, "{}={}", secret_name, value)
-                .with_context(|| format!("Failed to write to output file: {}", output_file))?;
+            if let Err(err) = writeln!(file, "{}={}", secret_name, value) {
+                error!("Failed to write to output file: {}: {}", output_file, err);
+                return Err(err.into());
+            }
         }
     }
+
     Ok(())
 }
 
@@ -155,8 +172,13 @@ async fn main() -> Result<()> {
 
     log.loading("Detecting credentials.");
     let credential = DefaultAzureCredential::default();
-    let client = KeyvaultClient::new(&vault_url, std::sync::Arc::new(credential))
-        .context("Failed to create KeyvaultClient")?;
+    let client = match KeyvaultClient::new(&vault_url, std::sync::Arc::new(credential)) {
+        Ok(c) => c,
+        Err(err) => {
+            error!("Failed to create KeyvaultClient: {}", err);
+            return Err(err.into());
+        }
+    };
     log.success("Detected credentials.");
 
     log.loading(format!(

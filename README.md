@@ -5,7 +5,7 @@
 [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-keyweave-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/keyweave)
 [<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/bartvdbraak/keyweave/checks.yml?style=for-the-badge" height="20">](https://github.com/bartvdbraak/keyweave/actions/workflows/checks.yml)
 
-<img align="right" src="https://github.com/bartvdbraak/keyweave/assets/3996360/bed7f004-e897-46e5-98a4-c654251c0e17" alt="Cluster" width="40%">
+<img align="right" src="https://github.com/bartvdbraak/keyweave/assets/3996360/439a376a-cdd2-4b36-8312-ded134f80822" alt="Keyweave" width="30%">
 
 Keyweave is an open-source tool crafted to seamlessly fetch secrets from Azure Key Vault and weave them into a convenient `.env` file. Developed in Rust, Keyweave stands out for its efficiency and user-friendly design, making it an ideal choice for managing your application's secrets.
 

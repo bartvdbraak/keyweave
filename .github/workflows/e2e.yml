@@ -63,7 +63,7 @@ jobs:
     - name: Use Keyweave with No Access Policies
       run: |
         chmod +x ./artifact/keyweave
-        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME}}
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}
 
   get-test:
     name: Tests with Get access
@@ -80,7 +80,7 @@ jobs:
     - name: Use Keyweave with Only Get Access Policy
       run: |
         chmod +x ./artifact/keyweave
-        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME}}
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}
 
   list-test:
     name: Tests with List access
@@ -97,7 +97,7 @@ jobs:
     - name: Use Keyweave with Only List Access Policy
       run: |
         chmod +x ./artifact/keyweave
-        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME}}
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}
 
   get-list-test:
     name: Tests with Get and List access
@@ -114,4 +114,37 @@ jobs:
     - name: Use Keyweave with both Get and List Access Policies
       run: |
         chmod +x ./artifact/keyweave
-        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME}}
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}
+
+    - name: Use Keyweave with a filter
+      run: |
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }} --filter "filter"
+
+    - name: Use Keyweave with a complex file path
+      run: |
+        mkdir -p "user/projects/project 1/src/lib"
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }} --output "user/projects/project 1/src/lib/.env"
+
+    - name: Use Keyweave with a non-existent Key Vault
+      run: ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}1234
+
+    - name: Use Keyweave with a no permissions
+      run: |
+        mkdir -p "user/projects/project 1/src/lib"
+        ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }} --output "/.env"
+
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.OTHER_SUBSCRIPTION_ID }}
+    - name: Use Keyweave while logged into other Subscription
+      run: ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}
+
+    # - uses: azure/login@v1
+    #   with:
+    #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    #     tenant-id: ${{ secrets.OTHER_TENANT_ID }}
+    #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    # - name: Use Keyweave while logged into other Azure Tenant
+    #   run: ./artifact/keyweave --vault-name ${{ env.VAULT_NAME }}

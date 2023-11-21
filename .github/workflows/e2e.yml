@@ -47,7 +47,6 @@ jobs:
         scope: subscription
         region: ${{ env.LOCATION }}
         template: bicep/main.bicep
-        parameters: bicep/main.test.bicepparams
         deploymentName: ${{ env.DEPLOYMENT_NAME }}
 
   none-test:

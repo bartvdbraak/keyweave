@@ -10,7 +10,7 @@ targetScope = 'subscription'
   'A' // Acceptance
   'P' // Production
 ])
-param environment string
+param environment string = 'T'
 param location string = 'westeurope'
 param name object = {
   tenantId: 'BVDB'

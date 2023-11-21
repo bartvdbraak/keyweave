@@ -39,7 +39,7 @@ async fn fetch_secrets_from_key_vault(
             Ok(p) => p,
             Err(err) => {
                 error!("Failed to fetch secrets page: {}", err);
-                return Err(err.into()); // Convert the error into anyhow::Error
+                return Err(err.into());
             }
         };
         secret_values
@@ -158,7 +158,7 @@ mod tests {
             vec!["SECRET_KEY=secret_value1", "API_KEY=secret_value2",]
         );
 
-        fs::remove_file(test_file)?; // Clean up the test file
+        fs::remove_file(test_file)?;
         Ok(())
     }
 }

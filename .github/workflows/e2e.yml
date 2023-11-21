@@ -1,0 +1,109 @@
+name: Checks
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'bicep/**', 'src/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/e2e.yml' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'bicep/**', 'src/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/e2e.yml' ]
+
+jobs:
+  bicep:
+    name: Deploy Azure resources
+    environment: bicep
+    runs-on: ubuntu-latest
+    env:
+      LOCATION: eastus
+      DEPLOYMENT_NAME: keyweave-${{ github.run_id }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Validate Bicep template
+      uses: azure/arm-deploy@v1
+      with:
+        scope: subscription
+        region: ${{ env.LOCATION }}
+        template: infra/bicep/main.bicep
+        parameters: infra/bicep/main.params.json
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        additionalArguments: "--what-if"
+
+    - name: Deploy Bicep template
+      if: github.ref == 'refs/heads/main'
+      uses: azure/arm-deploy@v1
+      with:
+        scope: subscription
+        region: ${{ env.LOCATION }}
+        template: infra/bicep/main.bicep
+        parameters: infra/bicep/main.params.json
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+  none-test:
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: 1-none
+    steps:
+    - uses: actions/checkout@v4
+    - name: Log into Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Use Keyweave with No Access Policies
+      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+  get-test:
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: 2-get
+    steps:
+    - uses: actions/checkout@v4
+    - name: Log into Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Use Keyweave with Only Get Access Policy
+      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+  list-test:
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: 3-list
+    steps:
+    - uses: actions/checkout@v4
+    - name: Log into Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Use Keyweave with Only List Access Policy
+      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+  get-list-test:
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: 4-get-list
+    steps:
+    - uses: actions/checkout@v4
+    - name: Log into Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Use Keyweave with both Get and List Access Policies
+      run: cargo run -- --vault-name bvdbkeyweavetweukvt1

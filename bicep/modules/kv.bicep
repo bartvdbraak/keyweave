@@ -2,14 +2,13 @@ param nameFormat string
 param location string
 param tags object
 
-param getPrincipalIds array
-param listPrincipalIds array
+param identities array
 
-var accessPolicies = [for id in union(getPrincipalIds, listPrincipalIds): {
+var accessPolicies = [for identity in identities: {
   tenantId: tenant().tenantId
-  objectId: id
+  objectId: identity.id
   permissions: {
-    secrets: contains(getPrincipalIds, id) && contains(listPrincipalIds, id) ? ['Get', 'List'] : contains(listPrincipalIds, id) ? ['List'] : ['Get']
+    secrets: contains(identity.name, 'get') && contains(identity.name, 'list') ? ['Get', 'List'] : contains(identity.name, 'get') ? ['Get'] : ['List']
   }
 }]
 

@@ -80,7 +80,6 @@ module KeyVault 'modules/kv.bicep' = {
     location: location
     tags: tags
 
-    getPrincipalIds: ManagedIdentities.outputs.getPrincipalIds
-    listPrincipalIds: ManagedIdentities.outputs.listPrincipalIds
+    identities: ManagedIdentities.outputs.identities
   }
 }

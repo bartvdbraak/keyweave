@@ -2,35 +2,32 @@ param nameFormat string
 param location string
 param tags object
 
-resource managedIdentityNone 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: format(nameFormat, 'ID', 1)
-  location: location
-  tags: tags
-}
-
-resource managedIdentityGet 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: format(nameFormat, 'ID', 2)
-  location: location
-  tags: tags
-}
-
-resource managedIdentityList 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: format(nameFormat, 'ID', 3)
-  location: location
-  tags: tags
-}
-
-resource managedIdentityGetList 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: format(nameFormat, 'ID', 4)
-  location: location
-  tags: tags
-}
-
-output getPrincipalIds array = [
-  managedIdentityGet.properties.principalId
-  managedIdentityGetList.properties.principalId
+param identityEnvironments array = [
+  'none'
+  'get'
+  'list'
+  'getlist'
 ]
-output listPrincipalIds array = [
-  managedIdentityList.properties.principalId
-  managedIdentityGetList.properties.principalId
-]
+
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = [for (environment, index) in identityEnvironments: {
+  name: format(nameFormat, 'ID', index+1)
+  location: location
+  tags: tags
+}]
+
+resource federatedCredential 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2023-01-31' = [for (environment, index) in identityEnvironments: {
+  name: environment
+  parent: managedIdentity[index+1]
+  properties: {
+    issuer: 'https://token.actions.githubusercontent.com'
+    subject: 'repo:bartvdbraak/keyweave:environment:${environment}'
+    audiences: [
+      'api://AzureADTokenExchange'
+    ]
+  }
+}]
+
+output identities array = [for (environment, index) in identityEnvironments: {
+  name: environment
+  id: managedIdentity[index+1].properties.principalId
+}]

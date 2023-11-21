@@ -4,6 +4,9 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  VAULT_NAME: bvdbkeyweavetweukvt1
+
 on:
   push:
     branches: [ main ]
@@ -13,6 +16,19 @@ on:
     paths: [ 'bicep/**', 'src/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/e2e.yml' ]
 
 jobs:
+  build:
+    name: Build Keyweave
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Build project
+      run: cargo build --all --release
+    - name: Archive binary artifact
+      uses: actions/upload-artifact@v3.1.3
+      with:
+        path: target/release/keyweave
+
   bicep:
     name: Deploy Azure resources
     environment: bicep
@@ -24,9 +40,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Deploy Bicep template
       uses: azure/arm-deploy@v1
       with:
@@ -35,67 +49,54 @@ jobs:
         template: bicep/main.bicep
         parameters: bicep/main.params.json
         deploymentName: ${{ env.DEPLOYMENT_NAME }}
+
   none-test:
     name: Tests without access
-    needs: bicep
+    needs: [build, bicep]
     runs-on: ubuntu-latest
-    environment: 1-none
+    environment: none
     steps:
-    - uses: actions/checkout@v4
-    - name: Log into Azure
-      uses: azure/login@v1
+    - uses: actions/download-artifact@v3.0.2
+    - uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - uses: dtolnay/rust-toolchain@stable
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Use Keyweave with No Access Policies
-      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+      run: ./keyweave --vault-name ${{ env.VAULT_NAME}}
+
   get-test:
     name: Tests with Get access
-    needs: bicep
+    needs: [build, bicep]
     runs-on: ubuntu-latest
-    environment: 2-get
+    environment: get
     steps:
-    - uses: actions/checkout@v4
-    - name: Log into Azure
-      uses: azure/login@v1
+    - uses: actions/download-artifact@v3.0.2
+    - uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - uses: dtolnay/rust-toolchain@stable
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Use Keyweave with Only Get Access Policy
-      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+      run: ./keyweave --vault-name ${{ env.VAULT_NAME}}
+
   list-test:
     name: Tests with List access
-    needs: bicep
+    needs: [build, bicep]
     runs-on: ubuntu-latest
-    environment: 3-list
+    environment: list
     steps:
-    - uses: actions/checkout@v4
-    - name: Log into Azure
-      uses: azure/login@v1
+    - uses: actions/download-artifact@v3.0.2
+    - uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - uses: dtolnay/rust-toolchain@stable
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Use Keyweave with Only List Access Policy
-      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+      run: ./keyweave --vault-name ${{ env.VAULT_NAME}}
   get-list-test:
     name: Tests with Get and List access
-    needs: bicep
+    needs: [build, bicep]
     runs-on: ubuntu-latest
-    environment: 4-get-list
+    environment: getlist
     steps:
-    - uses: actions/checkout@v4
-    - name: Log into Azure
-      uses: azure/login@v1
+    - uses: actions/download-artifact@v3.0.2
+    - uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - uses: dtolnay/rust-toolchain@stable
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Use Keyweave with both Get and List Access Policies
-      run: cargo run -- --vault-name bvdbkeyweavetweukvt1
+      run: ./keyweave --vault-name ${{ env.VAULT_NAME}}

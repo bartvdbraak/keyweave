@@ -17,7 +17,7 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-
 
 resource federatedCredential 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2023-01-31' = [for (environment, index) in identityEnvironments: {
   name: environment
-  parent: managedIdentity[index+1]
+  parent: managedIdentity[index]
   properties: {
     issuer: 'https://token.actions.githubusercontent.com'
     subject: 'repo:bartvdbraak/keyweave:environment:${environment}'
@@ -29,5 +29,5 @@ resource federatedCredential 'Microsoft.ManagedIdentity/userAssignedIdentities/f
 
 output identities array = [for (environment, index) in identityEnvironments: {
   name: environment
-  id: managedIdentity[index+1].properties.principalId
+  id: managedIdentity[index].properties.principalId
 }]

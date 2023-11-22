@@ -4,6 +4,7 @@ use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
 use clap::Parser;
 use futures::stream::StreamExt;
+use paris::{info, log};
 use paris::{error, Logger};
 use std::fs::File;
 use std::io::Write;
@@ -27,6 +28,24 @@ struct Opts {
     filter: Option<String>,
 }
 
+async fn check_vault_dns(vault_name: &str) -> Result<()> {
+    let vault_host = format!("{}.vault.azure.net", vault_name);
+
+    let lookup_result = {
+        tokio::net::lookup_host((vault_host.as_str(), 443)).await
+    };
+
+    match lookup_result {
+        Ok(_) => Ok(()),
+        Err(err) => {
+            error!("DNS lookup failed for Key Vault: {}", vault_name);
+            info!("Please check that the Key Vault exists or that you have no connectivity issues.");
+            Err(err.into())
+        }
+    }
+}
+
+
 async fn fetch_secrets_from_key_vault(
     client: &KeyvaultClient,
     filter: Option<&str>,
@@ -38,6 +57,7 @@ async fn fetch_secrets_from_key_vault(
         let page = match page {
             Ok(p) => p,
             Err(err) => {
+                log!("\n");
                 error!("Failed to fetch secrets page: {}", err);
                 return Err(err.into());
             }
@@ -180,6 +200,8 @@ async fn main() -> Result<()> {
         }
     };
     log.success("Detected credentials.");
+
+    check_vault_dns(&opts.vault_name).await?;
 
     log.loading(format!(
         "Fetching secrets from Key Vault: <blue>{}</>",

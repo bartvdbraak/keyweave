@@ -15,6 +15,8 @@ jobs:
     name: Deploy Azure resources
     environment: bicep
     runs-on: ubuntu-latest
+    concurrency:
+      group: bicep
     env:
       LOCATION: eastus
       DEPLOYMENT_NAME: keyweave-${{ github.run_id }}

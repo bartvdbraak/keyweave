@@ -11,6 +11,7 @@ use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::Semaphore;
+use azure_core::error::HttpError;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -59,6 +60,15 @@ async fn fetch_secrets_from_key_vault(
             Err(err) => {
                 log!("\n");
                 error!("Failed to fetch secrets page: {}", err);
+                let specific_error = err.downcast_ref::<HttpError>();
+                if let Some(specific_error) = specific_error {
+                    // Check the contents of the specific error
+                    if specific_error.error_message().unwrap().to_string().contains("does not have secrets list permission on key vault") {
+                        info!("Make sure you have List permissions on the Key Vault.");
+                    } else if specific_error.error_message().unwrap().to_string().contains("is not authorized and caller is not a trusted service") {
+                        info!("Make sure you're on the Key Vaults Firewall allowlist.");
+                    }
+                }
                 return Err(err.into());
             }
         };
@@ -68,6 +78,7 @@ async fn fetch_secrets_from_key_vault(
 
     Ok(secret_values)
 }
+
 
 async fn fetch_secrets_from_page(
     client: &azure_security_keyvault::SecretClient,
@@ -127,6 +138,7 @@ async fn fetch_and_send_secret(
         }
         Err(err) => {
             error!("Error fetching secret: {}", err);
+            info!("Make sure you have Get permissions on the Key Vault.");
             (secret_id, String::new())
         }
     }

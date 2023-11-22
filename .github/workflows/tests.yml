@@ -1,0 +1,45 @@
+name: Tests
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  bicep:
+    name: Deploy Azure resources
+    environment: bicep
+    runs-on: ubuntu-latest
+    env:
+      LOCATION: eastus
+      DEPLOYMENT_NAME: keyweave-${{ github.run_id }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Deploy Bicep template
+      uses: azure/arm-deploy@v1
+      with:
+        scope: subscription
+        region: ${{ env.LOCATION }}
+        template: bicep/main.bicep
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+
+  test:
+    name: Tests
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Run all tests
+      run: cargo test --all

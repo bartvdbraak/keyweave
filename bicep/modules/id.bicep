@@ -20,7 +20,7 @@ resource federatedCredential 'Microsoft.ManagedIdentity/userAssignedIdentities/f
   parent: managedIdentity[index]
   properties: {
     issuer: 'https://token.actions.githubusercontent.com'
-    subject: 'repo:bartvdbraak/keyweave:environment:${environment}'
+    subject: 'repo:bartvdbraak/keyweave:environment:test'
     audiences: [
       'api://AzureADTokenExchange'
     ]

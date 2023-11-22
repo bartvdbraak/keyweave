@@ -40,6 +40,13 @@ jobs:
     needs: bicep
     runs-on: ubuntu-latest
     environment: test
+    env:
+      AZURE_CLIENT_ID_NO_ACCESS: ${{ secrets.AZURE_CLIENT_ID_NO_ACCESS }}
+      AZURE_CLIENT_ID_GET: ${{ secrets.AZURE_CLIENT_ID_GET }}
+      AZURE_CLIENT_ID_LIST: ${{ secrets.AZURE_CLIENT_ID_LIST }}
+      AZURE_CLIENT_ID_GET_LIST: ${{ secrets.AZURE_CLIENT_ID_GET_LIST }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable

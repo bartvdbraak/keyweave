@@ -12,22 +12,24 @@ static FIREWALL_KEYVAULT: &str = "bvdbkeyweavetweukvt2";
 static NON_EXISTENT_KEYVAULT: &str = "bvdbkeyweavetweukvt3";
 
 fn azure_cli_login(client_id: String, tenant_id: String, subscription_id: String) -> Result<(), std::io::Error> {
-    Command::new("az")
+    println!("Executing 'az login' with client ID: {}", client_id);
+    let login_output = Command::new("az")
         .arg("login")
         .arg("--identity")
         .arg("--username")
-        .arg(client_id)
+        .arg(&client_id)
         .arg("--tenant")
-        .arg(tenant_id)
+        .arg(&tenant_id)
         .output()?;
-
-    Command::new("az")
+    println!("Login output: {:?}", login_output);
+    println!("Executing 'az account set' with subscription ID: {}", subscription_id);
+    let account_output = Command::new("az")
         .arg("account")
         .arg("set")
         .arg("--subscription")
-        .arg(subscription_id)
+        .arg(&subscription_id)
         .output()?;
-
+    println!("Account output: {:?}", account_output);
     Ok(())
 }
 

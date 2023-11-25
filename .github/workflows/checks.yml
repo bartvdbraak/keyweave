@@ -39,7 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
-    - name: Run tests
+    - name: Run unit tests
       run: cargo test --bins
   build:
     runs-on: ubuntu-latest

@@ -8,7 +8,7 @@ var accessPolicies = [for identity in identities: {
   tenantId: tenant().tenantId
   objectId: identity.id
   permissions: {
-    secrets: contains(identity.name, 'get') && contains(identity.name, 'list') ? ['Get', 'List'] : contains(identity.name, 'get') ? ['Get'] : ['List']
+    secrets: contains(identity.name, 'get') && contains(identity.name, 'list') ? ['Get', 'List'] : contains(identity.name, 'get') ? ['Get'] : contains(identity.name, 'list') ? ['List'] : []
   }
 }]
 

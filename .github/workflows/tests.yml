@@ -35,20 +35,67 @@ jobs:
         template: bicep/main.bicep
         deploymentName: ${{ env.DEPLOYMENT_NAME }}
 
-  test:
-    name: Tests
+  tests-no-access:
+    name: Tests with No Access
     needs: bicep
     runs-on: ubuntu-latest
     environment: test
-    env:
-      AZURE_CLIENT_ID_NO_ACCESS: ${{ secrets.AZURE_CLIENT_ID_NO_ACCESS }}
-      AZURE_CLIENT_ID_GET: ${{ secrets.AZURE_CLIENT_ID_GET }}
-      AZURE_CLIENT_ID_LIST: ${{ secrets.AZURE_CLIENT_ID_LIST }}
-      AZURE_CLIENT_ID_GET_LIST: ${{ secrets.AZURE_CLIENT_ID_GET_LIST }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID_NO_ACCESS }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     - name: Run all tests
-      run: cargo test --all
+      run: cargo test no_access
+  tests-get:
+    name: Tests with Get
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID_GET }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Run all tests
+      run: cargo test only_get
+  tests-list:
+    name: Tests with List
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID_LIST }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Run all tests
+      run: cargo test only_list
+  tests-get-list:
+    name: Tests with Get and List
+    needs: bicep
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID_GET_LIST }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Run all tests
+      run: cargo test get_and_list_access

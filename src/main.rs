@@ -1,17 +1,16 @@
 use anyhow::Result;
+use azure_core::error::HttpError;
 use azure_identity::DefaultAzureCredential;
 use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
 use clap::Parser;
 use futures::stream::StreamExt;
-use paris::{info, log};
 use paris::{error, Logger};
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::Semaphore;
-use azure_core::error::HttpError;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -32,20 +31,19 @@ struct Opts {
 async fn check_vault_dns(vault_name: &str) -> Result<()> {
     let vault_host = format!("{}.vault.azure.net", vault_name);
 
-    let lookup_result = {
-        tokio::net::lookup_host((vault_host.as_str(), 443)).await
-    };
+    let lookup_result = { tokio::net::lookup_host((vault_host.as_str(), 443)).await };
 
     match lookup_result {
         Ok(_) => Ok(()),
         Err(err) => {
             error!("DNS lookup failed for Key Vault: {}", vault_name);
-            info!("Please check that the Key Vault exists or that you have no connectivity issues.");
+            error!(
+                "Please check that the Key Vault exists or that you have no connectivity issues."
+            );
             Err(err.into())
         }
     }
 }
-
 
 async fn fetch_secrets_from_key_vault(
     client: &KeyvaultClient,
@@ -58,15 +56,24 @@ async fn fetch_secrets_from_key_vault(
         let page = match page {
             Ok(p) => p,
             Err(err) => {
-                log!("\n");
-                error!("Failed to fetch secrets page: {}", err);
+                error!("\n");
+                error!("Failed to fetch secrets.");
                 let specific_error = err.downcast_ref::<HttpError>();
                 if let Some(specific_error) = specific_error {
-                    // Check the contents of the specific error
-                    if specific_error.error_message().unwrap().to_string().contains("does not have secrets list permission on key vault") {
-                        info!("Make sure you have List permissions on the Key Vault.");
-                    } else if specific_error.error_message().unwrap().to_string().contains("is not authorized and caller is not a trusted service") {
-                        info!("Make sure you're on the Key Vaults Firewall allowlist.");
+                    if specific_error
+                        .error_message()
+                        .unwrap()
+                        .to_string()
+                        .contains("does not have secrets list permission on key vault")
+                    {
+                        error!("Make sure you have List permissions on the Key Vault.");
+                    } else if specific_error
+                        .error_message()
+                        .unwrap()
+                        .to_string()
+                        .contains("is not authorized and caller is not a trusted service")
+                    {
+                        error!("Make sure you're on the Key Vaults Firewall allowlist.");
                     }
                 }
                 return Err(err.into());
@@ -78,7 +85,6 @@ async fn fetch_secrets_from_key_vault(
 
     Ok(secret_values)
 }
-
 
 async fn fetch_secrets_from_page(
     client: &azure_security_keyvault::SecretClient,
@@ -136,9 +142,8 @@ async fn fetch_and_send_secret(
             let _ = tx.send((secret_id.clone(), bundle.value.clone())).await;
             (secret_id, bundle.value)
         }
-        Err(err) => {
-            error!("Error fetching secret: {}", err);
-            info!("Make sure you have Get permissions on the Key Vault.");
+        Err(_err) => {
+            error!("Error fetching secret. Make sure you have Get permissions on the Key Vault.");
             (secret_id, String::new())
         }
     }

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use azure_core::error::HttpError;
 use azure_identity::DefaultAzureCredential;
 use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
@@ -27,6 +28,23 @@ struct Opts {
     filter: Option<String>,
 }
 
+async fn check_vault_dns(vault_name: &str) -> Result<()> {
+    let vault_host = format!("{}.vault.azure.net", vault_name);
+
+    let lookup_result = { tokio::net::lookup_host((vault_host.as_str(), 443)).await };
+
+    match lookup_result {
+        Ok(_) => Ok(()),
+        Err(err) => {
+            error!("DNS lookup failed for Key Vault: {}", vault_name);
+            error!(
+                "Please check that the Key Vault exists or that you have no connectivity issues."
+            );
+            Err(err.into())
+        }
+    }
+}
+
 async fn fetch_secrets_from_key_vault(
     client: &KeyvaultClient,
     filter: Option<&str>,
@@ -38,8 +56,27 @@ async fn fetch_secrets_from_key_vault(
         let page = match page {
             Ok(p) => p,
             Err(err) => {
-                error!("Failed to fetch secrets page: {}", err);
-                return Err(err.into()); // Convert the error into anyhow::Error
+                error!("\n");
+                error!("Failed to fetch secrets.");
+                let specific_error = err.downcast_ref::<HttpError>();
+                if let Some(specific_error) = specific_error {
+                    if specific_error
+                        .error_message()
+                        .unwrap()
+                        .to_string()
+                        .contains("does not have secrets list permission on key vault")
+                    {
+                        error!("Make sure you have List permissions on the Key Vault.");
+                    } else if specific_error
+                        .error_message()
+                        .unwrap()
+                        .to_string()
+                        .contains("is not authorized and caller is not a trusted service")
+                    {
+                        error!("Make sure you're on the Key Vaults Firewall allowlist.");
+                    }
+                }
+                return Err(err.into());
             }
         };
         secret_values
@@ -105,8 +142,8 @@ async fn fetch_and_send_secret(
             let _ = tx.send((secret_id.clone(), bundle.value.clone())).await;
             (secret_id, bundle.value)
         }
-        Err(err) => {
-            error!("Error fetching secret: {}", err);
+        Err(_err) => {
+            error!("Error fetching secret. Make sure you have Get permissions on the Key Vault.");
             (secret_id, String::new())
         }
     }
@@ -158,7 +195,7 @@ mod tests {
             vec!["SECRET_KEY=secret_value1", "API_KEY=secret_value2",]
         );
 
-        fs::remove_file(test_file)?; // Clean up the test file
+        fs::remove_file(test_file)?;
         Ok(())
     }
 }
@@ -180,6 +217,8 @@ async fn main() -> Result<()> {
         }
     };
     log.success("Detected credentials.");
+
+    check_vault_dns(&opts.vault_name).await?;
 
     log.loading(format!(
         "Fetching secrets from Key Vault: <blue>{}</>",

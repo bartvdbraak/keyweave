@@ -21,19 +21,43 @@ jobs:
       LOCATION: eastus
       DEPLOYMENT_NAME: keyweave-${{ github.run_id }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Deploy Bicep template
-      uses: azure/arm-deploy@v1
-      with:
-        scope: subscription
-        region: ${{ env.LOCATION }}
-        template: bicep/main.bicep
-        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+      - uses: actions/checkout@v3
+
+      - name: Fetch complete history
+        run: git fetch --prune --unshallow
+  
+      - name: Get last deployed commit
+        id: last_deployed
+        run: echo "LAST_DEPLOYED_COMMIT=$(git rev-list -n 1 deployed)" >> $GITHUB_ENV
+  
+      - name: Check for changes in bicep folder
+        run: |
+          if git diff --quiet $LAST_DEPLOYED_COMMIT HEAD -- bicep/ ; then
+            echo "NO_CHANGES=true" >> $GITHUB_ENV
+          else
+            echo "NO_CHANGES=false" >> $GITHUB_ENV
+  
+      - if: env.NO_CHANGES == 'false'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  
+      - if: env.NO_CHANGES == 'false'
+        name: Deploy Bicep template
+        uses: azure/arm-deploy@v1
+        with:
+          scope: subscription
+          region: ${{ env.LOCATION }}
+          template: bicep/main.bicep
+          deploymentName: ${{ env.DEPLOYMENT_NAME }}
+  
+      - if: env.NO_CHANGES == 'false'
+        name: Tag Deployment
+        run: |
+          git tag -fa deployed -m "Deployed to Azure"
+          git push origin --tags --force
 
   tests-no-access:
     name: Tests with No Access

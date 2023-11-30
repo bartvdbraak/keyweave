@@ -24,7 +24,7 @@ resource _logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-1
   Key Vault
 */
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: replace(toLower(format(nameFormat, 'KVT', 1)), '-', '')
   location: location
   tags: tags
@@ -56,7 +56,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
   Key Vault
 */
 
-resource keyVaultWithFirewall 'Microsoft.KeyVault/vaults@2023-02-01' = {
+resource keyVaultWithFirewall 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: replace(toLower(format(nameFormat, 'KVT', 2)), '-', '')
   location: location
   tags: tags

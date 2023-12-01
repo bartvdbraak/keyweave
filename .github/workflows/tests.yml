@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deployed_tag_exists: ${{ steps.check_tag.outputs.DEPLOYED_TAG_EXISTS }}
-      no_changes: ${{ steps.check_tag.outputs.NO_CHANGES }}
+      no_changes: ${{ steps.check_changes.outputs.NO_CHANGES }}
     steps:
     - uses: actions/checkout@v3
     - name: Fetch complete history
@@ -32,6 +32,7 @@ jobs:
           echo "DEPLOYED_TAG_EXISTS=false" >> $GITHUB_ENV
         fi
     - name: Check for changes in bicep folder
+      id: check_changes
       if: env.DEPLOYED_TAG_EXISTS == 'true'
       run: |
         if git diff --quiet $LAST_DEPLOYED_COMMIT HEAD -- bicep/ ; then

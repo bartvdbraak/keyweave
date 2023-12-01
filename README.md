@@ -68,7 +68,7 @@ cargo build --release
 Once built, run Keyweave using Cargo:
 
 ```sh
-cargo run -- --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
+cargo run -- --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 ```
 
 ## Usage
@@ -76,17 +76,17 @@ cargo run -- --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 With the binary on your `PATH`, run Keyweave as follows:
 
 ```sh
-keyweave --vault_name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
+keyweave --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 ```
 
-- `--vault_name <VAULT_NAME>`: Sets the name of the Azure Key Vault.
+- `--vault-name <VAULT_NAME>`: Sets the name of the Azure Key Vault.
 - `--output <FILE>`: (Optional) Sets the name of the output file (default: `.env`).
 - `--filter <FILTER>`: (Optional) Filters the secrets to be retrieved by name.
 
 ## Example
 
 ```sh
-keyweave --vault_name my-key-vault --output my-env-file.env --filter my-secret
+keyweave --vault-name my-key-vault --output my-env-file.env --filter my-secret
 ```
 
 ## Documentation

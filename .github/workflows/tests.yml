@@ -19,7 +19,7 @@ jobs:
       deployed_tag_exists: ${{ steps.check_tag.outputs.DEPLOYED_TAG_EXISTS }}
       no_changes: ${{ steps.check_changes.outputs.NO_CHANGES }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Fetch complete history
       run: |
         git fetch --prune --unshallow --tags
@@ -53,7 +53,7 @@ jobs:
       LOCATION: eastus
       DEPLOYMENT_NAME: keyweave-${{ github.run_id }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: azure/login@v1
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}

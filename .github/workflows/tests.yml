@@ -58,8 +58,8 @@ jobs:
       - if: env.DEPLOYED_TAG_EXISTS == 'false' || env.NO_CHANGES == 'false'
         name: Tag Deployment
         run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "bartvdbraak@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -fa deployed -m "Deployed to Azure"
           git push origin --tags --force
 

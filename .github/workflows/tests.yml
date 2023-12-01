@@ -26,19 +26,19 @@ jobs:
       id: check_tag
       run: |
         if git rev-parse --verify deployed >/dev/null 2>&1; then
-          echo "DEPLOYED_TAG_EXISTS=true" >> $GITHUB_ENV
-          echo "LAST_DEPLOYED_COMMIT=$(git rev-list -n 1 deployed)" >> $GITHUB_ENV
+          echo "DEPLOYED_TAG_EXISTS=true" >> $GITHUB_OUTPUT
+          echo "LAST_DEPLOYED_COMMIT=$(git rev-list -n 1 deployed)" >> $GITHUB_OUTPUT
         else
-          echo "DEPLOYED_TAG_EXISTS=false" >> $GITHUB_ENV
+          echo "DEPLOYED_TAG_EXISTS=false" >> $GITHUB_OUTPUT
         fi
     - name: Check for changes in bicep folder
       id: check_changes
-      if: env.DEPLOYED_TAG_EXISTS == 'true'
+      if: steps.check_tag.outputs.DEPLOYED_TAG_EXISTS == 'true'
       run: |
-        if git diff --quiet $LAST_DEPLOYED_COMMIT HEAD -- bicep/ ; then
-          echo "NO_CHANGES=true" >> $GITHUB_ENV
+        if git diff --quiet ${{ steps.check_tag.outputs.LAST_DEPLOYED_COMMIT }} HEAD -- bicep/ ; then
+          echo "NO_CHANGES=true" >> $GITHUB_OUTPUT
         else
-          echo "NO_CHANGES=false" >> $GITHUB_ENV
+          echo "NO_CHANGES=false" >> $GITHUB_OUTPUT
         fi
   bicep:
     name: Deploy Azure resources

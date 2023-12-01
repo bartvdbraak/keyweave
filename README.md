@@ -26,7 +26,7 @@ Before diving into Keyweave, ensure you have the following prerequisites:
   az login --tenant "your-tenant-guid"
   ```
 
-- Identity has `Get` and `List` Secret Permissions in the Access Policies of the Key Vault.
+- The identity you logged in with has `Get` and `List` Secret Permissions in the Access Policies of the Key Vault.
 
 ## Installation 
 
@@ -83,7 +83,7 @@ keyweave --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 - `--output <FILE>`: (Optional) Sets the name of the output file (default: `.env`).
 - `--filter <FILTER>`: (Optional) Filters the secrets to be retrieved by name.
 
-## Example
+### Example
 
 ```sh
 keyweave --vault-name my-key-vault --output my-env-file.env --filter my-secret

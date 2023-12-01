@@ -73,67 +73,31 @@ jobs:
         git tag -fa deployed -m "Deployed to Azure"
         git push origin --tags --force
 
-  tests-no-access:
-    name: Tests with No Access
+  tests:
+    name: Run End-to-End Tests
     needs: bicep
     if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    strategy:
+      matrix:
+        include:
+        - filter: no_access
+          client-id-ref: AZURE_CLIENT_ID_NO_ACCESS
+        - filter: only_get
+          client-id-ref: AZURE_CLIENT_ID_GET
+        - filter: only_list
+          client-id-ref: AZURE_CLIENT_ID_LIST
+        - filter: get_and_list_access
+          client-id-ref: AZURE_CLIENT_ID_GET_LIST
     runs-on: ubuntu-latest
     environment: test
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
-    - uses: azure/login@v1
+    - name: Azure Login
+      uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID_NO_ACCESS }}
+        client-id: ${{ secrets[matrix.client-id-ref] }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Run all tests
-      run: cargo test no_access
-  tests-get:
-    name: Tests with Get
-    needs: bicep
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@stable
-    - uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID_GET }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Run all tests
-      run: cargo test only_get
-  tests-list:
-    name: Tests with List
-    needs: bicep
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@stable
-    - uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID_LIST }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Run all tests
-      run: cargo test only_list
-  tests-get-list:
-    name: Tests with Get and List
-    needs: bicep
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@stable
-    - uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID_GET_LIST }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Run all tests
-      run: cargo test get_and_list_access
+    - name: Run ${{ matrix.filter }} tests
+      run: cargo test ${{ matrix.filter }}

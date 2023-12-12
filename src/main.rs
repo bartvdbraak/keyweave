@@ -1,16 +1,30 @@
 use anyhow::Result;
-use azure_core::error::HttpError;
 use azure_identity::DefaultAzureCredential;
 use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
 use clap::Parser;
 use futures::stream::StreamExt;
 use paris::{error, Logger};
+use std::error::Error;
+use std::fmt;
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::Semaphore;
+
+#[derive(Debug)]
+struct CustomError {
+    message: String,
+}
+
+impl fmt::Display for CustomError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for CustomError {}
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -35,12 +49,15 @@ async fn check_vault_dns(vault_name: &str) -> Result<()> {
 
     match lookup_result {
         Ok(_) => Ok(()),
-        Err(err) => {
+        Err(_err) => {
             error!("DNS lookup failed for Key Vault: {}", vault_name);
             error!(
                 "Please check that the Key Vault exists or that you have no connectivity issues."
             );
-            Err(err.into())
+            Err(CustomError {
+                message: "An error occurred while fetching secrets".to_string(),
+            }
+            .into())
         }
     }
 }
@@ -56,27 +73,33 @@ async fn fetch_secrets_from_key_vault(
         let page = match page {
             Ok(p) => p,
             Err(err) => {
-                error!("\n");
-                error!("Failed to fetch secrets.");
-                let specific_error = err.downcast_ref::<HttpError>();
-                if let Some(specific_error) = specific_error {
-                    if specific_error
-                        .error_message()
-                        .unwrap()
-                        .to_string()
-                        .contains("does not have secrets list permission on key vault")
-                    {
-                        error!("Make sure you have List permissions on the Key Vault.");
-                    } else if specific_error
-                        .error_message()
-                        .unwrap()
-                        .to_string()
-                        .contains("is not authorized and caller is not a trusted service")
-                    {
-                        error!("Make sure you're on the Key Vaults Firewall allowlist.");
+                Logger::new().newline(1);
+                match err.as_http_error() {
+                    Some(err) => {
+                        if err
+                            .error_message()
+                            .unwrap()
+                            .contains("does not have secrets list permission on key vault")
+                        {
+                            error!("Make sure you have List permissions on the Key Vault.")
+                        } else if err
+                            .error_message()
+                            .unwrap()
+                            .contains("is not authorized and caller is not a trusted service")
+                        {
+                            error!("Make sure you're on the Key Vaults Firewall allowlist.")
+                        } else {
+                            error!("HTTP Error: {}", err);
+                        }
                     }
+                    _ => {
+                        error!("Error: {}", err);
+                    }
+                };
+                return Err(CustomError {
+                    message: "An error occurred while fetching secrets".to_string(),
                 }
-                return Err(err.into());
+                .into());
             }
         };
         secret_values
@@ -154,15 +177,21 @@ fn create_env_file(secrets: Vec<(String, String)>, output_file: &str) -> Result<
         Ok(f) => f,
         Err(err) => {
             error!("Failed to create output file: {}", err);
-            return Err(err.into());
+            return Err(CustomError {
+                message: "n Aerror occurred creating file".to_string(),
+            }
+            .into());
         }
     };
 
     for (key, value) in secrets {
         if let Some(secret_name) = key.split('/').last() {
-            if let Err(err) = writeln!(file, "{}={}", secret_name, value) {
-                error!("Failed to write to output file: {}: {}", output_file, err);
-                return Err(err.into());
+            if let Err(_err) = writeln!(file, "{}={}", secret_name, value) {
+                error!("Failed to write to output file: {}", output_file);
+                return Err(CustomError {
+                    message: "An error occurred while writing secrets to file".to_string(),
+                }
+                .into());
             }
         }
     }
@@ -203,7 +232,7 @@ mod tests {
 #[tokio::main]
 async fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
-    let mut log = Logger::new();
+    let mut log: Logger<'_> = Logger::new();
 
     let vault_url = format!("https://{}.vault.azure.net", opts.vault_name);
 

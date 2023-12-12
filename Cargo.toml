@@ -17,7 +17,7 @@ azure_security_keyvault = "0.17.0"
 clap = { version = "4.4.11", features = ["derive"] }
 futures = "0.3.29"
 paris = { version = "1.5.15", features = ["macros"] }
-tokio = {version = "1.34.0", features = ["full"]}
+tokio = {version = "1.35.0", features = ["full"]}
 
 [target.'cfg(all(target_os = "linux", any(target_env = "musl", target_arch = "arm", target_arch = "aarch64")))'.dependencies]
 openssl = { version = "0.10", features = ["vendored"] }

@@ -137,7 +137,7 @@ jobs:
           dst="keyweave-${{ matrix.target }}"
           tar cavf "$dst.tar.xz" "$dst"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: builds
           retention-days: 1

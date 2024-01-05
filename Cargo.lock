@@ -166,31 +166,6 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "azure_core"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ccd63c07d1fbfb3d4543d7ea800941bf5a30db1911b9b9e4db3b2c4210a434f"
-dependencies = [
- "async-trait",
- "base64 0.21.5",
- "bytes",
- "dyn-clone",
- "futures",
- "getrandom 0.2.11",
- "http-types",
- "log",
- "paste",
- "pin-project",
- "rand 0.8.5",
- "rustc_version",
- "serde",
- "serde_json",
- "time",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "azure_core"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6218987c374650fdad0b476bfc675729762c28dfb35f58608a38a2b1ea337dd"
@@ -208,6 +183,32 @@ dependencies = [
  "pin-project",
  "rand 0.8.5",
  "reqwest",
+ "rustc_version",
+ "serde",
+ "serde_json",
+ "time",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "azure_core"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70fd680c0d0424a518229b1150922f92653ba2ac933aa000abc8bf1ca08105f7"
+dependencies = [
+ "async-trait",
+ "base64 0.21.5",
+ "bytes",
+ "dyn-clone",
+ "futures",
+ "getrandom 0.2.11",
+ "http-types",
+ "log",
+ "once_cell",
+ "paste",
+ "pin-project",
+ "rand 0.8.5",
  "rustc_version",
  "serde",
  "serde_json",
@@ -1050,7 +1051,7 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "assert_fs",
- "azure_core 0.17.0",
+ "azure_core 0.19.0",
  "azure_identity",
  "azure_security_keyvault",
  "clap",

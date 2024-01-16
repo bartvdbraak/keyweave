@@ -14,7 +14,7 @@ anyhow = "1.0.79"
 azure_core = "0.19.0"
 azure_identity = "0.19.0"
 azure_security_keyvault = "0.19.0"
-clap = { version = "4.4.17", features = ["derive"] }
+clap = { version = "4.4.18", features = ["derive"] }
 futures = "0.3.30"
 paris = { version = "1.5.15", features = ["macros"] }
 tokio = {version = "1.35.1", features = ["full"]}

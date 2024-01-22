@@ -123,7 +123,7 @@ jobs:
           ext=""
           [[ "${{ matrix.name }}" == windows-* ]] && ext=".exe"
           bin="target/${{ matrix.target }}/release/keyweave${ext}"
-          [[ "${{ matrix.name }}" != windows-* ]] && strip "$bin"
+          strip "$bin" || true
           dst="keyweave-${{ matrix.target }}"
           mkdir -p "$dst" dist
           cp "$bin" "$dst/"

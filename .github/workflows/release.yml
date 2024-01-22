@@ -104,7 +104,6 @@ jobs:
 
       - uses: taiki-e/setup-cross-toolchain-action@v1
         with:
-          # NB: sets CARGO_BUILD_TARGET evar - do not need --target flag in build
           target: ${{ matrix.target }}
 
       - uses: taiki-e/install-action@cross
@@ -117,33 +116,28 @@ jobs:
         run: |
           echo "${{ needs.pre-check.outputs.version }}" > VERSION
 
-      - name: Package
+      - name: Archive and Package
         shell: bash
         run: |
           set -euxo pipefail
           ext=""
           [[ "${{ matrix.name }}" == windows-* ]] && ext=".exe"
           bin="target/${{ matrix.target }}/release/keyweave${ext}"
-          strip "$bin" || true
+          [[ "${{ matrix.name }}" != windows-* ]] && strip "$bin"
           dst="keyweave-${{ matrix.target }}"
-          mkdir "$dst"
+          mkdir -p "$dst" dist
           cp "$bin" "$dst/"
-
-      - name: Archive (tar)
-        if: '! startsWith(matrix.name, ''windows-'')'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          dst="keyweave-${{ matrix.target }}"
-          tar cavf "$dst.tar.xz" "$dst"
+          if [[ ${{ !startsWith(matrix.name, 'windows') }} ]] ; then
+            tar cavf "$dst.tar.xz" "$dst"
+            mv "$dst.tar.xz" dist/
+          else
+            mv "$dst/keyweave${ext}" dist/keyweave-${{ matrix.target }}.exe
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
-          name: builds
-          retention-days: 1
-          path: |
-            keyweave-*.tar.xz
-            keyweave-x86_64-pc-windows-gnu/keyweave.exe
+          name: dist-${{ matrix.target }}
+          path: dist
 
   release:
     needs: build
@@ -165,7 +159,9 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: builds
+          name: dist-*
+          merge-multiple: true
+          path: dist
 
       - name: Checksums with SHA512 and SHA256
         run: | 

@@ -160,14 +160,16 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: dist-*
-          merge-multiple: true
-          path: dist
+          merge-multiple: true          
 
-      - name: Checksums with SHA512 and SHA256
+      - name: Unzip artifacts 
+        run: | 
+          unzip dist-*.zip
+
+      - name: Unzip and Checksums with SHA512 and SHA256
         run: | 
           sha512sum keyweave-* | tee SHA512SUMS
           sha256sum keyweave-* | tee SHA256SUMS
-          tree
 
       - uses: softprops/action-gh-release@v1
         env:
@@ -177,7 +179,7 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             keyweave-*.tar.xz
-            keyweave-*/keyweave.exe
+            keyweave-*.exe
             *SUMS*
 
       - name: Generate SHA256SUM input for Homebrew

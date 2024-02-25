@@ -167,6 +167,7 @@ jobs:
         run: | 
           sha512sum keyweave-* | tee SHA512SUMS
           sha256sum keyweave-* | tee SHA256SUMS
+          tree
 
       - uses: softprops/action-gh-release@v1
         env:

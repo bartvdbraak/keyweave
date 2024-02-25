@@ -162,10 +162,6 @@ jobs:
           pattern: dist-*
           merge-multiple: true          
 
-      - name: Unzip artifacts 
-        run: | 
-          unzip dist-*.zip
-
       - name: Checksums with SHA512 and SHA256
         run: | 
           sha512sum keyweave-* | tee SHA512SUMS

@@ -54,7 +54,7 @@ jobs:
       DEPLOYMENT_NAME: keyweave-${{ github.run_id }}
     steps:
     - uses: actions/checkout@v4
-    - uses: azure/login@v1
+    - uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -94,7 +94,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
     - name: Azure Login
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         client-id: ${{ secrets[matrix.client-id-ref] }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}

@@ -11,7 +11,6 @@ Keyweave is an open-source tool crafted to seamlessly fetch secrets from Azure K
 
 ## Features
 
-
 - **Fetch Secrets**: Retrieve secrets securely from Azure Key Vault.
 - **Filtering**: Optionally filter the secrets to be retrieved by name.
 - **Output Customization**: Choose the name of the output file, defaulting to `.env`.

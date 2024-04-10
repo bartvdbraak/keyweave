@@ -1,6 +1,6 @@
 [package]
 name = "keyweave"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2021"
 authors = ["Bart van der Braak <bart@vanderbraak.nl>"]
 keywords = ["azure", "keyvault", "env"]

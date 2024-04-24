@@ -11,7 +11,7 @@ repository = "https://github.com/bartvdbraak/keyweave/"
 
 [dependencies]
 anyhow = "1.0.82"
-azure_core = "0.19.0"
+azure_core = "0.20.0"
 azure_identity = "0.19.0"
 azure_security_keyvault = "0.19.0"
 clap = { version = "4.5.4", features = ["derive"] }

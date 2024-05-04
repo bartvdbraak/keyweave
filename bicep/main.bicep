@@ -31,7 +31,7 @@ var nameFormat = '${name.tenantId}-${name.projectId}-${environment}-${name.regio
   Resource Group
 */
 
-resource ResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
+resource ResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: format(nameFormat, 'RG', 1)
   location: location
   tags: tags

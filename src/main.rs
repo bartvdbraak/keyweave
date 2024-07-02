@@ -1,5 +1,5 @@
 use anyhow::Result;
-use azure_identity::DefaultAzureCredential;
+use azure_identity::{DefaultAzureCredential, TokenCredentialOptions};
 use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
 use clap::Parser;
@@ -237,7 +237,12 @@ async fn main() -> Result<()> {
     let vault_url = format!("https://{}.vault.azure.net", opts.vault_name);
 
     log.loading("Detecting credentials.");
-    let credential = DefaultAzureCredential::default();
+    let credential_options = TokenCredentialOptions::default();
+    let credential =
+        DefaultAzureCredential::create(credential_options).map_err(|e| CustomError {
+            message: format!("Failed to create DefaultAzureCredential: {}", e),
+        })?;
+
     let client = match KeyvaultClient::new(&vault_url, std::sync::Arc::new(credential)) {
         Ok(c) => c,
         Err(err) => {

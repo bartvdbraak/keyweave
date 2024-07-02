@@ -16,7 +16,7 @@ var accessPolicies = [for identity in identities: {
   Log Analytics Workspace (existing)
 */
 
-resource _logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+resource _logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: format(nameFormat, 'LAW', 1)
 }
 

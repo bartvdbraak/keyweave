@@ -6,7 +6,7 @@ param tags object
   Log Analytics Workspace
 */
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: format(nameFormat, 'LAW', 1)
   location: location
   tags: tags

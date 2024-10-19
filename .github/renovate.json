@@ -1,5 +1,12 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": ["config:base"],
-	"reviewers": ["bartvdbraak"]
+	"reviewers": ["bartvdbraak"],
+ "packageRules": [
+    {
+      "matchPackagePrefixes": ["azure"],
+      "groupName": "Azure Dependencies",
+      "groupSlug": "azure-dependencies"
+    }
+ ]
 }

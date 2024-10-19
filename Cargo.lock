@@ -249,9 +249,9 @@ checksum = "0c4b4d0bd25bd0b74681c0ad21497610ce1b7c91b1022cd21c80c6fbdd9476b0"
 
 [[package]]
 name = "azure_core"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34ce3de4b65b1ee2667c81d1fc692949049502a4cf9c38118d811d6d79a7eaef"
+checksum = "7b552ad43a45a746461ec3d3a51dfb6466b4759209414b439c165eb6a6b7729e"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -276,9 +276,9 @@ dependencies = [
 
 [[package]]
 name = "azure_identity"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72c97790480791ec1ee9b76f5c6499b1d0aac0d4cd1e62010bfc19bb545544c5"
+checksum = "88ddd80344317c40c04b603807b63a5cefa532f1b43522e72f480a988141f744"
 dependencies = [
  "async-lock",
  "async-process",
@@ -297,9 +297,9 @@ dependencies = [
 
 [[package]]
 name = "azure_security_keyvault"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "338cac645bda0555f59189873be0cccaf420c26791f009b2207b62474cebbab8"
+checksum = "bd94f507b75349a0e381c0a23bd77cc654fb509f0e6797ce4f99dd959d9e2d68"
 dependencies = [
  "async-trait",
  "azure_core",

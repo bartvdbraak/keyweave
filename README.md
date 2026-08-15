@@ -16,6 +16,7 @@ Keyweave is an open-source tool crafted to seamlessly fetch secrets from Azure K
 - **Filtering**: Optionally filter the secrets to be retrieved by name.
 - **Output Customization**: Choose the name of the output file, defaulting to `.env`.
 - **Azure Default Credentials**: Utilizes Azure default credentials for authentication.
+- **Set Secrets**: Push secrets from a `.env` file to Azure Key Vault with `--set`.
 
 ## Prerequisites
 
@@ -69,7 +70,7 @@ cargo build --release
 Once built, run Keyweave using Cargo:
 
 ```sh
-cargo run -- --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
+cargo run -- --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>] [--set]
 ```
 
 ## Usage
@@ -77,17 +78,22 @@ cargo run -- --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
 With the binary on your `PATH`, run Keyweave as follows:
 
 ```sh
-keyweave --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>]
+keyweave --vault-name <VAULT_NAME> [--output <FILE>] [--filter <FILTER>] [--set]
 ```
 
 - `--vault-name <VAULT_NAME>`: Sets the name of the Azure Key Vault.
 - `--output <FILE>`: (Optional) Sets the name of the output file (default: `.env`).
 - `--filter <FILTER>`: (Optional) Filters the secrets to be retrieved by name.
+- `-s, --set`: (Optional) Sets secrets in the Key Vault from the output file (default: `.env`). Requires `Set` Secret Permission in the Key Vault access policy.
 
 ### Example
 
 ```sh
 keyweave --vault-name my-key-vault --output my-env-file.env --filter my-secret
+```
+
+```sh
+keyweave --vault-name my-key-vault --set
 ```
 
 ## Documentation

@@ -2,7 +2,7 @@ use anyhow::Result;
 use azure_identity::{DefaultAzureCredential, TokenCredentialOptions};
 use azure_security_keyvault::prelude::KeyVaultGetSecretsResponse;
 use azure_security_keyvault::KeyvaultClient;
-use clap::Parser;
+use clap::{ArgAction, Parser};
 use futures::stream::StreamExt;
 use paris::{error, Logger};
 use std::error::Error;
@@ -40,6 +40,10 @@ struct Opts {
     /// Filters the secrets to be retrieved by name
     #[clap(short, long, value_name = "FILTER")]
     filter: Option<String>,
+
+    /// Sets secrets in the Key Vault from the output file
+    #[clap(short, long, action = ArgAction::SetTrue)]
+    set: bool,
 }
 
 async fn check_vault_dns(vault_name: &str) -> Result<()> {
@@ -199,6 +203,61 @@ fn create_env_file(secrets: Vec<(String, String)>, output_file: &str) -> Result<
     Ok(())
 }
 
+async fn set_secrets_from_env_file(client: &KeyvaultClient, input_file: &str) -> Result<u32> {
+    let content = match std::fs::read_to_string(input_file) {
+        Ok(c) => c,
+        Err(err) => {
+            error!("Failed to read input file: {}", err);
+            return Err(CustomError {
+                message: "An error occurred while reading the .env file".to_string(),
+            }
+            .into());
+        }
+    };
+
+    let mut set_count = 0u32;
+    for line in content.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
+        let (key, value) = match line.split_once('=') {
+            Some((k, v)) => (k.trim(), v.trim()),
+            None => {
+                error!("Invalid line in input file: {}", line);
+                return Err(CustomError {
+                    message: "An error occurred while parsing the .env file".to_string(),
+                }
+                .into());
+            }
+        };
+
+        if key.is_empty() {
+            continue;
+        }
+
+        match client.secret_client().set(key, value).await {
+            Ok(_) => {
+                set_count += 1;
+            }
+            Err(err) => {
+                error!(
+                    "Failed to set secret: {}. Make sure you have Set permissions on the Key Vault.",
+                    key
+                );
+                error!("Error: {}", err);
+                return Err(CustomError {
+                    message: "An error occurred while setting secrets".to_string(),
+                }
+                .into());
+            }
+        }
+    }
+
+    Ok(set_count)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -253,6 +312,20 @@ async fn main() -> Result<()> {
     log.success("Detected credentials.");
 
     check_vault_dns(&opts.vault_name).await?;
+
+    if opts.set {
+        log.loading(format!(
+            "Setting secrets from file: <blue>{}</>",
+            opts.output
+        ));
+        let count = set_secrets_from_env_file(&client, &opts.output).await?;
+        log.success(format!(
+            "Set {} secret(s) in Key Vault: <blue>{}</>",
+            count, opts.vault_name
+        ));
+        log.success("Done.");
+        return Ok(());
+    }
 
     log.loading(format!(
         "Fetching secrets from Key Vault: <blue>{}</>",
